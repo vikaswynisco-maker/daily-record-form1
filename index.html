@@ -29,6 +29,16 @@
     <input type="file" id="file" accept="image/*" required>
 
     <button onclick="submitData()">Submit</button>
+
+    <!-- 🔐 LOGOUT / CHANGE USER BUTTON (NEW) -->
+    <button
+      id="logoutBtn"
+      onclick="logoutUser()"
+      style="display:none; background:#dc3545; margin-top:10px;"
+    >
+      Logout / Change User
+    </button>
+
     <div id="status"></div>
   </div>
 
