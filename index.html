@@ -54,33 +54,53 @@
 <script>
 function submitData() {
   const date = document.getElementById("date").value;
-  const fileInput = document.getElementById("file");
-  const file = fileInput.files[0];
+  const file = document.getElementById("file").files[0];
 
   if (!date || !file) {
     alert("Please select date and screenshot");
     return;
   }
 
+  const img = new Image();
   const reader = new FileReader();
 
-  reader.onloadend = function () {
-    const base64 = reader.result.split(",")[1];
+  reader.onload = function (e) {
+    img.src = e.target.result;
+  };
+
+  img.onload = function () {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // 🔥 Resize (VERY IMPORTANT)
+    const MAX_WIDTH = 800;
+    const scale = MAX_WIDTH / img.width;
+    canvas.width = MAX_WIDTH;
+    canvas.height = img.height * scale;
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    // 🔥 Compress image
+    const compressedBase64 = canvas
+      .toDataURL("image/jpeg", 0.6)
+      .split(",")[1];
 
     fetch("https://script.google.com/macros/s/AKfycbw8Qzv3j007i8nTiK2Q1cO1LuHErR4ieADcJGQitSxGlzE2ZqBNscYGQu5Ez6-Vamfz6w/exec", {
       method: "POST",
       body: new URLSearchParams({
         date: date,
-        screenshot: base64
+        screenshot: compressedBase64
       })
     })
     .then(() => alert("Saved successfully"))
-    .catch(() => alert("Error saving data"));
+    .catch(() => alert("Error"));
   };
 
   reader.readAsDataURL(file);
 }
 </script>
 
+
 </body>
 </html>
+
