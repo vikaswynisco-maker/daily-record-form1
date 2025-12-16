@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Daily Record</title>
+  <meta charset="UTF-8">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 40px;
+    }
+    .box {
+      background: white;
+      padding: 25px;
+      width: 320px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    }
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+    }
+    input, button {
+      width: 100%;
+      margin-top: 5px;
+      padding: 8px;
+    }
+    button {
+      margin-top: 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h3>Daily Record</h3>
+
+  <label>Date</label>
+  <input type="date" id="date" required>
+
+  <label>Screenshot</label>
+  <input type="file" id="file" accept="image/*" required>
+
+  <button onclick="submitData()">Submit</button>
+</div>
+
+<script>
+function submitData() {
+  const date = document.getElementById("date").value;
+  const fileInput = document.getElementById("file");
+  const file = fileInput.files[0];
+
+  if (!date || !file) {
+    alert("Please select date and screenshot");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onloadend = function () {
+    const base64 = reader.result.split(",")[1];
+
+    fetch("https://script.google.com/macros/s/AKfycbw8Qzv3j007i8nTiK2Q1cO1LuHErR4ieADcJGQitSxGlzE2ZqBNscYGQu5Ez6-Vamfz6w/exec", {
+      method: "POST",
+      body: new URLSearchParams({
+        date: date,
+        screenshot: base64
+      })
+    })
+    .then(() => alert("Saved successfully"))
+    .catch(() => alert("Error saving data"));
+  };
+
+  reader.readAsDataURL(file);
+}
+</script>
+
+</body>
+</html>
