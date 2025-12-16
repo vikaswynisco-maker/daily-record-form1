@@ -25,28 +25,10 @@ function checkSession() {
   if (savedUser) {
     authorizeUser(savedUser);
   } else {
+    enableForm(false);
     askForPin();
   }
 }
-
-ffunction logoutUser() {
-  if (!confirm("Do you want to logout and change user?")) return;
-
-  sessionStorage.removeItem("authorizedUser");
-  isAuthorized = false;
-
-  document.getElementById("submittedBy").value = "";
-  document.getElementById("submittedBy").disabled = false;
-  document.getElementById("file").value = "";
-  document.getElementById("status").innerText = "";
-
-  document.getElementById("logoutBtn").style.display = "none";
-
-  enableForm(false);
-
-  setTimeout(askForPin, 200);
-}
-
 
 // ===== ASK FOR PIN =====
 function askForPin() {
@@ -69,32 +51,46 @@ function askForPin() {
 function authorizeUser(user) {
   isAuthorized = true;
 
-  document.getElementById("date").disabled = false;
-  document.getElementById("file").disabled = false;
-
-  const submitBtn = document.querySelector("button");
-  submitBtn.disabled = false;
-  submitBtn.style.background = "#007bff";
+  enableForm(true);
 
   const submittedBy = document.getElementById("submittedBy");
   submittedBy.value = user;
-  submittedBy.disabled = true;
+  submittedBy.disabled = true; // 🔒 lock user
 
-  // ✅ SHOW LOGOUT BUTTON
   document.getElementById("logoutBtn").style.display = "block";
 }
-
 
 // ===== ENABLE / DISABLE FORM =====
 function enableForm(enable) {
   document.getElementById("date").disabled = !enable;
   document.getElementById("file").disabled = !enable;
+  document.getElementById("submittedBy").disabled = !enable;
 
-  const btn = document.querySelector("button");
-  btn.disabled = !enable;
-  btn.style.background = enable ? "#007bff" : "gray";
+  const submitBtn = document.querySelector("button");
+  submitBtn.disabled = !enable;
+  submitBtn.style.background = enable ? "#007bff" : "gray";
+
+  if (!enable) {
+    document.getElementById("logoutBtn").style.display = "none";
+  }
 }
 
+// ===== LOGOUT =====
+function logoutUser() {
+  if (!confirm("Do you want to logout and change user?")) return;
+
+  sessionStorage.removeItem("authorizedUser");
+  isAuthorized = false;
+
+  document.getElementById("submittedBy").value = "";
+  document.getElementById("submittedBy").disabled = false;
+  document.getElementById("file").value = "";
+  document.getElementById("status").innerText = "";
+
+  enableForm(false);
+
+  setTimeout(askForPin, 200);
+}
 
 // ===== LOAD TABLE DATA =====
 function loadAllData() {
