@@ -16,14 +16,14 @@
     <input type="date" id="date" required>
 
     <label>Submitted By</label>
-    <select id="submittedBy" required>
-      <option value="">-- Select --</option>
-      <option value="MOHINI">MOHINI</option>
-      <option value="Vikram">Vikram</option>
-      <option value="Vikas">Vikas</option>
-      <option value="Aditya">Aditya</option>
-      <option value="Priyanshu">Priyanshu</option>
-    </select>
+    <select id="filterUser" onchange="filterByUser()">
+  <option value="">All Users</option>
+  <option value="MOHINI">MOHINI</option>
+  <option value="Vikram">Vikram</option>
+  <option value="Vikas">Vikas</option>
+  <option value="Aditya">Aditya</option>
+  <option value="Priyanshu">Priyanshu</option>
+</select>
 
     <label>Screenshot</label>
     <input type="file" id="file" accept="image/*" required>
@@ -71,5 +71,6 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
