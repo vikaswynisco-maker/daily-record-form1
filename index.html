@@ -18,14 +18,14 @@
     .box {
       background: grey;
       padding: 25px;
-      width: 320px;
+      width: 340px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.15);
+      color: white;
     }
 
     h3 {
       text-align: center;
-      color:white;
       margin-bottom: 20px;
     }
 
@@ -40,12 +40,6 @@
       margin-top: 5px;
       padding: 8px;
     }
-
-    select option[value="MOHINI"] { background: #e1bee7; }
-    select option[value="Vikram"] { background: #bbdefb; }
-    select option[value="Vikas"] { background: #c8e6c9; }
-    select option[value="Aditya"] { background: #ffe0b2; }
-    select option[value="Priyanshu"] { background: #ffcdd2; }
 
     button {
       margin-top: 20px;
@@ -64,6 +58,27 @@
       margin-top: 10px;
       font-size: 14px;
       text-align: center;
+    }
+
+    #dailyUploads {
+      margin-top: 15px;
+      background: #ffffff;
+      color: #000;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 13px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    #dailyUploads ul {
+      padding-left: 18px;
+      margin: 5px 0;
+    }
+
+    #dailyUploads a {
+      color: #007bff;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -90,16 +105,70 @@
   <input type="file" id="file" accept="image/*" required>
 
   <button id="submitBtn" onclick="submitData()">Submit</button>
+
   <div id="status"></div>
-  <div id="dailyUploads"></div>
+  <div id="dailyUploads">Select date to see uploads</div>
 </div>
 
 <script>
+const API_URL =
+"https://script.google.com/macros/s/AKfycbxaYbcaTVjHmruTngOpbh6vM027P9SlNSi4MPM03SY6jsUkZh25siWb-mmvVNmK7mkp-Q/exec";
+
+document.getElementById("date").addEventListener("change", checkDailyUpload);
+document.getElementById("submittedBy").addEventListener("change", checkDailyUpload);
+
+function checkDailyUpload() {
+  const date = document.getElementById("date").value;
+  const submittedBy = document.getElementById("submittedBy").value;
+  const box = document.getElementById("dailyUploads");
+  const btn = document.getElementById("submitBtn");
+  const status = document.getElementById("status");
+
+  if (!date) return;
+
+  box.innerHTML = "Checking uploads...";
+  btn.disabled = false;
+  status.innerText = "";
+
+  fetch(`${API_URL}?date=${date}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.length === 0) {
+        box.innerHTML = "<b>No upload found for this date.</b>";
+        return;
+      }
+
+      let html = "<b>Uploaded today:</b><ul>";
+      let alreadyUploaded = false;
+
+      data.forEach(row => {
+        html += `<li>
+          <b>${row.submittedBy}</b> –
+          <a href="${row.screenshotLink}" target="_blank">View</a>
+        </li>`;
+
+        if (row.submittedBy === submittedBy) {
+          alreadyUploaded = true;
+        }
+      });
+
+      html += "</ul>";
+      box.innerHTML = html;
+
+      if (alreadyUploaded) {
+        btn.disabled = true;
+        status.innerText = "You already uploaded for this date ✅";
+      }
+    })
+    .catch(() => {
+      box.innerHTML = "Error loading data";
+    });
+}
+
 function submitData() {
   const date = document.getElementById("date").value;
   const submittedBy = document.getElementById("submittedBy").value;
-  const fileInput = document.getElementById("file");
-  const file = fileInput.files[0];
+  const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
   const btn = document.getElementById("submitBtn");
 
@@ -108,64 +177,46 @@ function submitData() {
     return;
   }
 
-  if (file.size > 2 * 1024 * 1024) {
-    alert("Image must be under 2MB");
-    return;
-  }
-
   btn.disabled = true;
   btn.innerText = "Uploading...";
   status.innerText = "Please wait...";
 
-  const img = new Image();
   const reader = new FileReader();
+  reader.onload = function () {
+    const img = new Image();
+    img.src = reader.result;
 
-  reader.onload = e => img.src = e.target.result;
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const MAX_WIDTH = 800;
+      const scale = MAX_WIDTH / img.width;
 
-  img.onload = function () {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+      canvas.width = MAX_WIDTH;
+      canvas.height = img.height * scale;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    const MAX_WIDTH = 800;
-    const scale = MAX_WIDTH / img.width;
+      const base64 = canvas.toDataURL("image/jpeg", 0.6).split(",")[1];
 
-    canvas.width = MAX_WIDTH;
-    canvas.height = img.height * scale;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    const base64 = canvas
-      .toDataURL("image/jpeg", 0.6)
-      .split(",")[1];
-
-    fetch("https://script.google.com/macros/s/AKfycbxaYbcaTVjHmruTngOpbh6vM027P9SlNSi4MPM03SY6jsUkZh25siWb-mmvVNmK7mkp-Q/exec", {
-      method: "POST",
-      body: new URLSearchParams({
-        date: date,
-        submittedBy: submittedBy,
-        screenshot: base64
+      fetch(API_URL, {
+        method: "POST",
+        body: new URLSearchParams({
+          date: date,
+          submittedBy: submittedBy,
+          screenshot: base64
+        })
       })
-    })
-    .then(() => {
-      status.innerText = "Saved successfully ✅";
-      btn.innerText = "Submit";
-      btn.disabled = false;
-      fileInput.value = "";
-    })
-    .catch(() => {
-      status.innerText = "Error ❌";
-      btn.innerText = "Submit";
-      btn.disabled = false;
-    });
+      .then(() => {
+        status.innerText = "Saved successfully ✅";
+        btn.innerText = "Submit";
+        document.getElementById("file").value = "";
+        checkDailyUpload();
+      });
+    };
   };
-
   reader.readAsDataURL(file);
 }
 </script>
 
 </body>
 </html>
-
-
-
-
-
