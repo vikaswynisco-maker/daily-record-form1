@@ -1,33 +1,64 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxaYbcaTVjHmruTngOpbh6vM027P9SlNSi4MPM03SY6jsUkZh25siWb-mmvVNmK7mkp-Q/exec";
 
-// ===== ADMIN PIN CONFIG =====
-const ADMIN_PIN = "1234"; // 🔴 change PIN here
+// ===== USER PIN MAP =====
+const USER_PINS = {
+  MOHINI: "1111",
+  Vikram: "2222",
+  Vikas: "3333",
+  Aditya: "4444",
+  Priyanshu: "5555"
+};
+
 let isAuthorized = false;
 
 // ===== ON PAGE LOAD =====
 window.onload = function () {
-  askForPin();
+  checkSession();
   loadAllData();
 };
 
+// ===== CHECK SESSION =====
+function checkSession() {
+  const savedUser = sessionStorage.getItem("authorizedUser");
+
+  if (savedUser) {
+    authorizeUser(savedUser);
+  } else {
+    askForPin();
+  }
+}
+
 // ===== ASK FOR PIN =====
 function askForPin() {
-  const pin = prompt("Enter Admin PIN to submit records:");
+  const pin = prompt("Enter your PIN to submit records:");
 
-  if (pin === ADMIN_PIN) {
-    isAuthorized = true;
-    enableForm(true);
+  const user = Object.keys(USER_PINS).find(
+    key => USER_PINS[key] === pin
+  );
+
+  if (user) {
+    sessionStorage.setItem("authorizedUser", user);
+    authorizeUser(user);
   } else {
     alert("Invalid PIN ❌ Submission disabled");
     enableForm(false);
   }
 }
 
+// ===== AUTHORIZE USER =====
+function authorizeUser(user) {
+  isAuthorized = true;
+  enableForm(true);
+
+  const submittedBy = document.getElementById("submittedBy");
+  submittedBy.value = user;
+  submittedBy.disabled = true; // 🔒 LOCK DROPDOWN
+}
+
 // ===== ENABLE / DISABLE FORM =====
 function enableForm(enable) {
   document.getElementById("date").disabled = !enable;
-  document.getElementById("submittedBy").disabled = !enable;
   document.getElementById("file").disabled = !enable;
 
   const btn = document.querySelector("button");
@@ -68,9 +99,8 @@ function formatDate(dateValue) {
 // ===== SUBMIT DATA =====
 function submitData() {
 
-  // 🔐 EXTRA SAFETY CHECK
   if (!isAuthorized) {
-    alert("You are not authorized to submit ❌");
+    alert("You are not authorized ❌");
     return;
   }
 
