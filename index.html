@@ -9,9 +9,9 @@
       font-family: Arial, sans-serif;
       background: #f2f2f2;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
+      padding: 30px;
       margin: 0;
     }
 
@@ -22,6 +22,7 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.15);
       color: white;
+      margin-bottom: 25px;
     }
 
     h3 {
@@ -49,34 +50,32 @@
       cursor: pointer;
     }
 
-    button:disabled {
-      background: #999;
-      cursor: not-allowed;
-    }
-
     #status {
       margin-top: 10px;
-      font-size: 14px;
       text-align: center;
     }
 
-    #dailyUploads {
-      margin-top: 15px;
-      background: #ffffff;
-      color: #000;
-      padding: 10px;
-      border-radius: 5px;
-      font-size: 13px;
-      max-height: 150px;
-      overflow-y: auto;
+    /* TABLE STYLES */
+    table {
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 900px;
+      background: white;
     }
 
-    #dailyUploads ul {
-      padding-left: 18px;
-      margin: 5px 0;
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
     }
 
-    #dailyUploads a {
+    th {
+      background: #007bff;
+      color: white;
+    }
+
+    a {
       color: #007bff;
       text-decoration: none;
     }
@@ -85,6 +84,7 @@
 
 <body>
 
+<!-- FORM BOX -->
 <div class="box">
   <h3>Daily Record</h3>
 
@@ -104,64 +104,47 @@
   <label>Screenshot</label>
   <input type="file" id="file" accept="image/*" required>
 
-  <button id="submitBtn" onclick="submitData()">Submit</button>
-
+  <button onclick="submitData()">Submit</button>
   <div id="status"></div>
-  <div id="dailyUploads">Select date to see uploads</div>
 </div>
+
+<!-- TABLE -->
+<table id="dataTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Submitted By</th>
+      <th>Screenshot</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
 <script>
 const API_URL =
 "https://script.google.com/macros/s/AKfycbxaYbcaTVjHmruTngOpbh6vM027P9SlNSi4MPM03SY6jsUkZh25siWb-mmvVNmK7mkp-Q/exec";
 
-document.getElementById("date").addEventListener("change", checkDailyUpload);
-document.getElementById("submittedBy").addEventListener("change", checkDailyUpload);
-
-function checkDailyUpload() {
-  const date = document.getElementById("date").value;
-  const submittedBy = document.getElementById("submittedBy").value;
-  const box = document.getElementById("dailyUploads");
-  const btn = document.getElementById("submitBtn");
-  const status = document.getElementById("status");
-
-  if (!date) return;
-
-  box.innerHTML = "Checking uploads...";
-  btn.disabled = false;
-  status.innerText = "";
-
-  fetch(`${API_URL}?date=${date}`)
+// LOAD ALL DATA
+function loadAllData() {
+  fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      if (data.length === 0) {
-        box.innerHTML = "<b>No upload found for this date.</b>";
-        return;
-      }
+      const tbody = document.querySelector("#dataTable tbody");
+      tbody.innerHTML = "";
 
-      let html = "<b>Uploaded today:</b><ul>";
-      let alreadyUploaded = false;
-
-      data.forEach(row => {
-        html += `<li>
-          <b>${row.submittedBy}</b> –
-          <a href="${row.screenshotLink}" target="_blank">View</a>
-        </li>`;
-
-        if (row.submittedBy === submittedBy) {
-          alreadyUploaded = true;
-        }
+      data.reverse().forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.date}</td>
+          <td>${row.submittedBy}</td>
+          <td><a href="${row.screenshotLink}" target="_blank">View</a></td>
+        `;
+        tbody.appendChild(tr);
       });
-
-      html += "</ul>";
-      box.innerHTML = html;
-
-      if (alreadyUploaded) {
-        btn.disabled = true;
-        status.innerText = "You already uploaded for this date ✅";
-      }
     })
     .catch(() => {
-      box.innerHTML = "Error loading data";
+      document.querySelector("#dataTable tbody").innerHTML =
+        "<tr><td colspan='3'>Error loading data</td></tr>";
     });
 }
 
@@ -170,16 +153,13 @@ function submitData() {
   const submittedBy = document.getElementById("submittedBy").value;
   const file = document.getElementById("file").files[0];
   const status = document.getElementById("status");
-  const btn = document.getElementById("submitBtn");
 
   if (!date || !submittedBy || !file) {
     alert("Please fill all fields");
     return;
   }
 
-  btn.disabled = true;
-  btn.innerText = "Uploading...";
-  status.innerText = "Please wait...";
+  status.innerText = "Uploading...";
 
   const reader = new FileReader();
   reader.onload = function () {
@@ -205,17 +185,18 @@ function submitData() {
           submittedBy: submittedBy,
           screenshot: base64
         })
-      })
-      .then(() => {
+      }).then(() => {
         status.innerText = "Saved successfully ✅";
-        btn.innerText = "Submit";
         document.getElementById("file").value = "";
-        checkDailyUpload();
+        loadAllData();
       });
     };
   };
   reader.readAsDataURL(file);
 }
+
+// LOAD TABLE ON PAGE LOAD
+loadAllData();
 </script>
 
 </body>
