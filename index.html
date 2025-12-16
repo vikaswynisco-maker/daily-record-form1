@@ -168,15 +168,20 @@ function submitData() {
 
     img.onload = function () {
       const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const MAX_WIDTH = 800;
-      const scale = MAX_WIDTH / img.width;
+const ctx = canvas.getContext("2d");
 
-      canvas.width = MAX_WIDTH;
-      canvas.height = img.height * scale;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+const MAX_WIDTH = 1400;
+const scale = Math.min(1, MAX_WIDTH / img.width);
 
-      const base64 = canvas.toDataURL("image/jpeg", 0.6).split(",")[1];
+canvas.width = img.width * scale;
+canvas.height = img.height * scale;
+
+ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+const base64 = canvas
+  .toDataURL("image/jpeg", 0.85)
+  .split(",")[1];
+
 
       fetch(API_URL, {
         method: "POST",
@@ -201,4 +206,5 @@ loadAllData();
 
 </body>
 </html>
+
 
