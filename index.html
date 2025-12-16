@@ -135,7 +135,7 @@ function loadAllData() {
       data.reverse().forEach(row => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${row.date}</td>
+          <td>${formatDate(row.date)}</td>
           <td>${row.submittedBy}</td>
           <td><a href="${row.screenshotLink}" target="_blank">View</a></td>
         `;
@@ -147,6 +147,12 @@ function loadAllData() {
         "<tr><td colspan='3'>Error loading data</td></tr>";
     });
 }
+  function formatDate(dateValue) {
+  if (!dateValue) return "";
+  const d = new Date(dateValue);
+  return d.toISOString().split("T")[0]; // YYYY-MM-DD
+}
+
 
 function submitData() {
   const date = document.getElementById("date").value;
@@ -206,5 +212,6 @@ loadAllData();
 
 </body>
 </html>
+
 
 
