@@ -1,9 +1,41 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxaYbcaTVjHmruTngOpbh6vM027P9SlNSi4MPM03SY6jsUkZh25siWb-mmvVNmK7mkp-Q/exec";
 
-// Load data on page load
-window.onload = loadAllData;
+// ===== ADMIN PIN CONFIG =====
+const ADMIN_PIN = "1234"; // 🔴 change PIN here
+let isAuthorized = false;
 
+// ===== ON PAGE LOAD =====
+window.onload = function () {
+  askForPin();
+  loadAllData();
+};
+
+// ===== ASK FOR PIN =====
+function askForPin() {
+  const pin = prompt("Enter Admin PIN to submit records:");
+
+  if (pin === ADMIN_PIN) {
+    isAuthorized = true;
+    enableForm(true);
+  } else {
+    alert("Invalid PIN ❌ Submission disabled");
+    enableForm(false);
+  }
+}
+
+// ===== ENABLE / DISABLE FORM =====
+function enableForm(enable) {
+  document.getElementById("date").disabled = !enable;
+  document.getElementById("submittedBy").disabled = !enable;
+  document.getElementById("file").disabled = !enable;
+
+  const btn = document.querySelector("button");
+  btn.disabled = !enable;
+  btn.style.background = enable ? "#007bff" : "gray";
+}
+
+// ===== LOAD TABLE DATA =====
 function loadAllData() {
   fetch(API_URL)
     .then(res => res.json())
@@ -27,12 +59,21 @@ function loadAllData() {
     });
 }
 
+// ===== DATE FORMAT =====
 function formatDate(dateValue) {
   if (!dateValue) return "";
   return new Date(dateValue).toISOString().split("T")[0];
 }
 
+// ===== SUBMIT DATA =====
 function submitData() {
+
+  // 🔐 EXTRA SAFETY CHECK
+  if (!isAuthorized) {
+    alert("You are not authorized to submit ❌");
+    return;
+  }
+
   const date = document.getElementById("date").value;
   const submittedBy = document.getElementById("submittedBy").value;
   const file = document.getElementById("file").files[0];
