@@ -29,6 +29,24 @@ function checkSession() {
   }
 }
 
+function logoutUser() {
+  if (!confirm("Do you want to logout and change user?")) return;
+
+  sessionStorage.removeItem("authorizedUser");
+  isAuthorized = false;
+
+  // reset form
+  document.getElementById("submittedBy").value = "";
+  document.getElementById("submittedBy").disabled = false;
+  document.getElementById("file").value = "";
+  document.getElementById("status").innerText = "";
+
+  enableForm(false);
+
+  // ask PIN again
+  setTimeout(askForPin, 200);
+}
+
 // ===== ASK FOR PIN =====
 function askForPin() {
   const pin = prompt("Enter your PIN to submit records:");
