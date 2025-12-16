@@ -1,6 +1,5 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxaYbcaTVjHmruTngOpbh6vM027P9SlNSi4MPM03SY6jsUkZh25siWb-mmvVNmK7mkp-Q/exec";
-
 // ===== USER PIN MAP =====
 const USER_PINS = {
   MOHINI: "1111",
