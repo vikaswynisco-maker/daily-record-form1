@@ -14,46 +14,46 @@
     <label>Date</label>
     <input type="date" id="date" required>
 
+    <!-- ✅ FORM USER (LOCKED BY PIN) -->
     <label>Submitted By</label>
-    <select id="filterUser" onchange="filterByUser()">
-  <option value="">All Users</option>
-  <option value="MOHINI">MOHINI</option>
-  <option value="Vikram">Vikram</option>
-  <option value="Vikas">Vikas</option>
-  <option value="Aditya">Aditya</option>
-  <option value="Priyanshu">Priyanshu</option>
-</select>
+    <select id="submittedBy" required>
+      <option value="">-- Select --</option>
+      <option value="MOHINI">MOHINI</option>
+      <option value="Vikram">Vikram</option>
+      <option value="Vikas">Vikas</option>
+      <option value="Aditya">Aditya</option>
+      <option value="Priyanshu">Priyanshu</option>
+    </select>
 
     <label>Screenshot</label>
     <input type="file" id="file" accept="image/*" required>
 
     <button onclick="submitData()">Submit</button>
 
-    <!-- 🔐 LOGOUT / CHANGE USER BUTTON (NEW) -->
+    <!-- 🔐 LOGOUT BUTTON -->
     <button
-  id="logoutBtn"
-  onclick="logoutUser()"
-  style="display:none; background:#dc3545; margin-top:10px;"
->
+      id="logoutBtn"
+      onclick="logoutUser()"
+      style="display:none; background:#dc3545; margin-top:10px;"
+    >
       Logout
     </button>
 
     <div id="status"></div>
   </div>
 
-  <!-- 🔍 FILTER BY USER -->
-<div style="margin-bottom:15px;">
-  <label><b>Search by User</b></label>
-  <select id="filterUser" onchange="filterByUser()">
-    <option value="">All Users</option>
-    <option value="MOHINI">MOHINI</option>
-    <option value="Vikram">Vikram</option>
-    <option value="Vikas">Vikas</option>
-    <option value="Aditya">Aditya</option>
-    <option value="Priyanshu">Priyanshu</option>
-  </select>
-</div>
-
+  <!-- 🔍 FILTER BY USER (TABLE SEARCH) -->
+  <div style="margin-bottom:15px;">
+    <label><b>Search by User</b></label>
+    <select id="filterUser" onchange="filterByUser()">
+      <option value="">All Users</option>
+      <option value="MOHINI">MOHINI</option>
+      <option value="Vikram">Vikram</option>
+      <option value="Vikas">Vikas</option>
+      <option value="Aditya">Aditya</option>
+      <option value="Priyanshu">Priyanshu</option>
+    </select>
+  </div>
 
   <!-- TABLE -->
   <table id="dataTable">
@@ -70,9 +70,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
