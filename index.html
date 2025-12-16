@@ -3,215 +3,47 @@
 <head>
   <title>Daily Record</title>
   <meta charset="UTF-8">
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #66ffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 30px;
-      margin: 0;
-    }
-
-    .box {
-      background: grey;
-      padding: 25px;
-      width: 340px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.15);
-      color: white;
-      margin-bottom: 25px;
-    }
-
-    h3 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    label {
-      font-weight: bold;
-      margin-top: 15px;
-      display: block;
-    }
-
-    input, select, button {
-      width: 100%;
-      margin-top: 5px;
-      padding: 8px;
-    }
-
-    button {
-      margin-top: 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    #status {
-      margin-top: 10px;
-      text-align: center;
-    }
-
-    /* TABLE STYLES */
-    table {
-      border-collapse: collapse;
-      width: 90%;
-      max-width: 900px;
-      background: white;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    th {
-      background: #007bff;
-      color: white;
-    }
-
-    a {
-      color: #007bff;
-      text-decoration: none;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- FORM BOX -->
-<div class="box">
-  <h3>Daily Record</h3>
+  <!-- FORM BOX -->
+  <div class="box">
+    <h3>Daily Record</h3>
 
-  <label>Date</label>
-  <input type="date" id="date" required>
+    <label>Date</label>
+    <input type="date" id="date" required>
 
-  <label>Submitted By</label>
-  <select id="submittedBy" required>
-    <option value="">-- Select --</option>
-    <option value="MOHINI">MOHINI</option>
-    <option value="Vikram">Vikram</option>
-    <option value="Vikas">Vikas</option>
-    <option value="Aditya">Aditya</option>
-    <option value="Priyanshu">Priyanshu</option>
-  </select>
+    <label>Submitted By</label>
+    <select id="submittedBy" required>
+      <option value="">-- Select --</option>
+      <option value="MOHINI">MOHINI</option>
+      <option value="Vikram">Vikram</option>
+      <option value="Vikas">Vikas</option>
+      <option value="Aditya">Aditya</option>
+      <option value="Priyanshu">Priyanshu</option>
+    </select>
 
-  <label>Screenshot</label>
-  <input type="file" id="file" accept="image/*" required>
+    <label>Screenshot</label>
+    <input type="file" id="file" accept="image/*" required>
 
-  <button onclick="submitData()">Submit</button>
-  <div id="status"></div>
-</div>
+    <button onclick="submitData()">Submit</button>
+    <div id="status"></div>
+  </div>
 
-<!-- TABLE -->
-<table id="dataTable">
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Submitted By</th>
-      <th>Screenshot</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <!-- TABLE -->
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Submitted By</th>
+        <th>Screenshot</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<script>
-const API_URL =
-"https://script.google.com/macros/s/AKfycbxaYbcaTVjHmruTngOpbh6vM027P9SlNSi4MPM03SY6jsUkZh25siWb-mmvVNmK7mkp-Q/exec";
-
-// LOAD ALL DATA
-function loadAllData() {
-  fetch(API_URL)
-    .then(res => res.json())
-    .then(data => {
-      const tbody = document.querySelector("#dataTable tbody");
-      tbody.innerHTML = "";
-
-      data.reverse().forEach(row => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${formatDate(row.date)}</td>
-          <td>${row.submittedBy}</td>
-          <td><a href="${row.screenshotLink}" target="_blank">View</a></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    })
-    .catch(() => {
-      document.querySelector("#dataTable tbody").innerHTML =
-        "<tr><td colspan='3'>Error loading data</td></tr>";
-    });
-}
-  function formatDate(dateValue) {
-  if (!dateValue) return "";
-  const d = new Date(dateValue);
-  return d.toISOString().split("T")[0]; // YYYY-MM-DD
-}
-
-
-function submitData() {
-  const date = document.getElementById("date").value;
-  const submittedBy = document.getElementById("submittedBy").value;
-  const file = document.getElementById("file").files[0];
-  const status = document.getElementById("status");
-
-  if (!date || !submittedBy || !file) {
-    alert("Please fill all fields");
-    return;
-  }
-
-  status.innerText = "Uploading...";
-
-  const reader = new FileReader();
-  reader.onload = function () {
-    const img = new Image();
-    img.src = reader.result;
-
-    img.onload = function () {
-      const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
-
-const MAX_WIDTH = 1400;
-const scale = Math.min(1, MAX_WIDTH / img.width);
-
-canvas.width = img.width * scale;
-canvas.height = img.height * scale;
-
-ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-const base64 = canvas
-  .toDataURL("image/jpeg", 0.85)
-  .split(",")[1];
-
-
-      fetch(API_URL, {
-        method: "POST",
-        body: new URLSearchParams({
-          date: date,
-          submittedBy: submittedBy,
-          screenshot: base64
-        })
-      }).then(() => {
-        status.innerText = "Saved successfully ✅";
-        document.getElementById("file").value = "";
-        loadAllData();
-      });
-    };
-  };
-  reader.readAsDataURL(file);
-}
-
-// LOAD TABLE ON PAGE LOAD
-loadAllData();
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
-
-
-
