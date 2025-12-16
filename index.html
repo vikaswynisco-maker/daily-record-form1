@@ -8,13 +8,10 @@
     body {
       font-family: Arial, sans-serif;
       background: #f2f2f2;
-
-      /* 🔥 CENTERING */
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-
       margin: 0;
     }
 
@@ -37,11 +34,17 @@
       display: block;
     }
 
-    input, button {
+    input, select, button {
       width: 100%;
       margin-top: 5px;
       padding: 8px;
     }
+
+    select option[value="MOHINI"] { background: #e1bee7; }
+    select option[value="Vikram"] { background: #bbdefb; }
+    select option[value="Vikas"] { background: #c8e6c9; }
+    select option[value="Aditya"] { background: #ffe0b2; }
+    select option[value="Priyanshu"] { background: #ffcdd2; }
 
     button {
       margin-top: 20px;
@@ -72,6 +75,16 @@
   <label>Date</label>
   <input type="date" id="date" required>
 
+  <label>Submitted By</label>
+  <select id="submittedBy" required>
+    <option value="">-- Select --</option>
+    <option value="MOHINI">MOHINI</option>
+    <option value="Vikram">Vikram</option>
+    <option value="Vikas">Vikas</option>
+    <option value="Aditya">Aditya</option>
+    <option value="Priyanshu">Priyanshu</option>
+  </select>
+
   <label>Screenshot</label>
   <input type="file" id="file" accept="image/*" required>
 
@@ -82,18 +95,19 @@
 <script>
 function submitData() {
   const date = document.getElementById("date").value;
+  const submittedBy = document.getElementById("submittedBy").value;
   const fileInput = document.getElementById("file");
   const file = fileInput.files[0];
   const status = document.getElementById("status");
   const btn = document.getElementById("submitBtn");
 
-  if (!date || !file) {
-    alert("Please select date and screenshot");
+  if (!date || !submittedBy || !file) {
+    alert("Please fill all fields");
     return;
   }
 
   if (file.size > 2 * 1024 * 1024) {
-    alert("Please upload image under 2MB");
+    alert("Image must be under 2MB");
     return;
   }
 
@@ -104,9 +118,7 @@ function submitData() {
   const img = new Image();
   const reader = new FileReader();
 
-  reader.onload = function (e) {
-    img.src = e.target.result;
-  };
+  reader.onload = e => img.src = e.target.result;
 
   img.onload = function () {
     const canvas = document.createElement("canvas");
@@ -117,7 +129,6 @@ function submitData() {
 
     canvas.width = MAX_WIDTH;
     canvas.height = img.height * scale;
-
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
     const base64 = canvas
@@ -128,6 +139,7 @@ function submitData() {
       method: "POST",
       body: new URLSearchParams({
         date: date,
+        submittedBy: submittedBy,
         screenshot: base64
       })
     })
@@ -138,7 +150,7 @@ function submitData() {
       fileInput.value = "";
     })
     .catch(() => {
-      status.innerText = "Error saving data ❌";
+      status.innerText = "Error ❌";
       btn.innerText = "Submit";
       btn.disabled = false;
     });
