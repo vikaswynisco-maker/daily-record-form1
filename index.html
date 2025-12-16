@@ -34,6 +34,14 @@
       border: none;
       cursor: pointer;
     }
+    button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 14px;
+    }
   </style>
 </head>
 
@@ -48,18 +56,32 @@
   <label>Screenshot</label>
   <input type="file" id="file" accept="image/*" required>
 
-  <button onclick="submitData()">Submit</button>
+  <button id="submitBtn" onclick="submitData()">Submit</button>
+  <div id="status"></div>
 </div>
 
 <script>
 function submitData() {
   const date = document.getElementById("date").value;
-  const file = document.getElementById("file").files[0];
+  const fileInput = document.getElementById("file");
+  const file = fileInput.files[0];
+  const status = document.getElementById("status");
+  const btn = document.getElementById("submitBtn");
 
   if (!date || !file) {
     alert("Please select date and screenshot");
     return;
   }
+
+  // 🔹 Reject very large files
+  if (file.size > 2 * 1024 * 1024) {
+    alert("Please upload image under 2MB");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Uploading...";
+  status.innerText = "Please wait...";
 
   const img = new Image();
   const reader = new FileReader();
@@ -72,16 +94,17 @@ function submitData() {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
-    // 🔥 Resize (VERY IMPORTANT)
+    // 🔥 Resize for speed
     const MAX_WIDTH = 800;
     const scale = MAX_WIDTH / img.width;
+
     canvas.width = MAX_WIDTH;
     canvas.height = img.height * scale;
 
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
     // 🔥 Compress image
-    const compressedBase64 = canvas
+    const base64 = canvas
       .toDataURL("image/jpeg", 0.6)
       .split(",")[1];
 
@@ -89,18 +112,25 @@ function submitData() {
       method: "POST",
       body: new URLSearchParams({
         date: date,
-        screenshot: compressedBase64
+        screenshot: base64
       })
     })
-    .then(() => alert("Saved successfully"))
-    .catch(() => alert("Error"));
+    .then(() => {
+      status.innerText = "Saved successfully ✅";
+      btn.innerText = "Submit";
+      btn.disabled = false;
+      fileInput.value = "";
+    })
+    .catch(() => {
+      status.innerText = "Error saving data ❌";
+      btn.innerText = "Submit";
+      btn.disabled = false;
+    });
   };
 
   reader.readAsDataURL(file);
 }
 </script>
 
-
 </body>
 </html>
-
