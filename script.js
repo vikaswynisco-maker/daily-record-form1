@@ -29,23 +29,24 @@ function checkSession() {
   }
 }
 
-function logoutUser() {
+ffunction logoutUser() {
   if (!confirm("Do you want to logout and change user?")) return;
 
   sessionStorage.removeItem("authorizedUser");
   isAuthorized = false;
 
-  // reset form
   document.getElementById("submittedBy").value = "";
   document.getElementById("submittedBy").disabled = false;
   document.getElementById("file").value = "";
   document.getElementById("status").innerText = "";
 
+  document.getElementById("logoutBtn").style.display = "none";
+
   enableForm(false);
 
-  // ask PIN again
   setTimeout(askForPin, 200);
 }
+
 
 // ===== ASK FOR PIN =====
 function askForPin() {
@@ -67,12 +68,22 @@ function askForPin() {
 // ===== AUTHORIZE USER =====
 function authorizeUser(user) {
   isAuthorized = true;
-  enableForm(true);
+
+  document.getElementById("date").disabled = false;
+  document.getElementById("file").disabled = false;
+
+  const submitBtn = document.querySelector("button");
+  submitBtn.disabled = false;
+  submitBtn.style.background = "#007bff";
 
   const submittedBy = document.getElementById("submittedBy");
   submittedBy.value = user;
-  submittedBy.disabled = true; // 🔒 LOCK DROPDOWN
+  submittedBy.disabled = true;
+
+  // ✅ SHOW LOGOUT BUTTON
+  document.getElementById("logoutBtn").style.display = "block";
 }
+
 
 // ===== ENABLE / DISABLE FORM =====
 function enableForm(enable) {
@@ -83,6 +94,7 @@ function enableForm(enable) {
   btn.disabled = !enable;
   btn.style.background = enable ? "#007bff" : "gray";
 }
+
 
 // ===== LOAD TABLE DATA =====
 function loadAllData() {
