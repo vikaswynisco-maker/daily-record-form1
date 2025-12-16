@@ -42,6 +42,20 @@
     <div id="status"></div>
   </div>
 
+  <!-- 🔍 FILTER BY USER -->
+<div style="margin-bottom:15px;">
+  <label><b>Search by User</b></label>
+  <select id="filterUser" onchange="filterByUser()">
+    <option value="">All Users</option>
+    <option value="MOHINI">MOHINI</option>
+    <option value="Vikram">Vikram</option>
+    <option value="Vikas">Vikas</option>
+    <option value="Aditya">Aditya</option>
+    <option value="Priyanshu">Priyanshu</option>
+  </select>
+</div>
+
+
   <!-- TABLE -->
   <table id="dataTable">
     <thead>
@@ -57,4 +71,5 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
