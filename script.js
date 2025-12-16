@@ -9,6 +9,8 @@ const USER_PINS = {
   Aditya: "4444",
   Priyanshu: "5555"
 };
+let allRecords = [];
+
 
 let isAuthorized = false;
 
@@ -97,23 +99,45 @@ function loadAllData() {
   fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      const tbody = document.querySelector("#dataTable tbody");
-      tbody.innerHTML = "";
-
-      data.reverse().forEach(row => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${formatDate(row.date)}</td>
-          <td>${row.submittedBy}</td>
-          <td><a href="${row.screenshotLink}" target="_blank">View</a></td>
-        `;
-        tbody.appendChild(tr);
-      });
+      allRecords = data.reverse();   // store all data
+      renderTable(allRecords);       // render table
     })
     .catch(() => {
       document.querySelector("#dataTable tbody").innerHTML =
         "<tr><td colspan='3'>Error loading data</td></tr>";
     });
+}
+function renderTable(data) {
+  const tbody = document.querySelector("#dataTable tbody");
+  tbody.innerHTML = "";
+
+  if (data.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='3'>No records found</td></tr>";
+    return;
+  }
+
+  data.forEach(row => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${formatDate(row.date)}</td>
+      <td>${row.submittedBy}</td>
+      <td><a href="${row.screenshotLink}" target="_blank">View</a></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterByUser() {
+  const selectedUser = document.getElementById("filterUser").value;
+
+  if (!selectedUser) {
+    renderTable(allRecords); // show all users
+  } else {
+    const filteredData = allRecords.filter(
+      row => row.submittedBy === selectedUser
+    );
+    renderTable(filteredData);
+  }
 }
 
 // ===== DATE FORMAT =====
