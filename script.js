@@ -1,16 +1,18 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxaYbcaTVjHmruTngOpbh6vM027P9SlNSi4MPM03SY6jsUkZh25siWb-mmvVNmK7mkp-Q/exec";
 // ===== USER PIN MAP =====
+
+
+// ===== USER PIN MAP =====
 const USER_PINS = {
   MOHINI: "1111",
   Vikram: "2222",
-  Vikas: "3333", 
+  Vikas: "3333",
   Aditya: "4444",
   Priyanshu: "5555"
 };
+
 let allRecords = [];
-
-
 let isAuthorized = false;
 
 // ===== ON PAGE LOAD =====
@@ -43,7 +45,7 @@ function askForPin() {
     sessionStorage.setItem("authorizedUser", user);
     authorizeUser(user);
   } else {
-    alert("Invalid PIN ❌ Submission disabled");
+    alert("Invalid PIN ❌");
     enableForm(false);
   }
 }
@@ -51,12 +53,11 @@ function askForPin() {
 // ===== AUTHORIZE USER =====
 function authorizeUser(user) {
   isAuthorized = true;
-
   enableForm(true);
 
   const submittedBy = document.getElementById("submittedBy");
   submittedBy.value = user;
-  submittedBy.disabled = true; // 🔒 lock user
+  submittedBy.disabled = true;
 
   document.getElementById("logoutBtn").style.display = "block";
 }
@@ -67,7 +68,7 @@ function enableForm(enable) {
   document.getElementById("file").disabled = !enable;
   document.getElementById("submittedBy").disabled = !enable;
 
-  const submitBtn = document.querySelector("button");
+  const submitBtn = document.getElementById("submitBtn");
   submitBtn.disabled = !enable;
   submitBtn.style.background = enable ? "#007bff" : "gray";
 
@@ -89,7 +90,6 @@ function logoutUser() {
   document.getElementById("status").innerText = "";
 
   enableForm(false);
-
   setTimeout(askForPin, 200);
 }
 
@@ -98,14 +98,15 @@ function loadAllData() {
   fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      allRecords = data.reverse();   // store all data
-      renderTable(allRecords);       // render table
+      allRecords = data.reverse();
+      renderTable(allRecords);
     })
     .catch(() => {
       document.querySelector("#dataTable tbody").innerHTML =
         "<tr><td colspan='3'>Error loading data</td></tr>";
     });
 }
+
 function renderTable(data) {
   const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
@@ -126,16 +127,16 @@ function renderTable(data) {
   });
 }
 
+// ===== FILTER BY USER =====
 function filterByUser() {
   const selectedUser = document.getElementById("filterUser").value;
 
   if (!selectedUser) {
-    renderTable(allRecords); // show all users
+    renderTable(allRecords);
   } else {
-    const filteredData = allRecords.filter(
-      row => row.submittedBy === selectedUser
+    renderTable(
+      allRecords.filter(r => r.submittedBy === selectedUser)
     );
-    renderTable(filteredData);
   }
 }
 
@@ -147,9 +148,8 @@ function formatDate(dateValue) {
 
 // ===== SUBMIT DATA =====
 function submitData() {
-
   if (!isAuthorized) {
-    alert("You are not authorized ❌");
+    alert("Not authorized ❌");
     return;
   }
 
@@ -174,17 +174,13 @@ function submitData() {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
 
-      const MAX_WIDTH = 1400;
-      const scale = Math.min(1, MAX_WIDTH / img.width);
-
+      const scale = Math.min(1, 1400 / img.width);
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
 
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      const base64 = canvas
-        .toDataURL("image/jpeg", 0.85)
-        .split(",")[1];
+      const base64 = canvas.toDataURL("image/jpeg", 0.85).split(",")[1];
 
       fetch(API_URL, {
         method: "POST",
@@ -193,11 +189,18 @@ function submitData() {
           submittedBy,
           screenshot: base64
         })
-      }).then(() => {
-        status.innerText = "Saved successfully ✅";
-        document.getElementById("file").value = "";
-        loadAllData();
-      });
+      })
+        .then(res => res.text())
+        .then(msg => {
+          if (msg === "ALREADY_SUBMITTED") {
+            status.innerText = "Already submitted today ❌";
+            return;
+          }
+
+          status.innerText = "Saved successfully ✅";
+          document.getElementById("file").value = "";
+          loadAllData();
+        });
     };
   };
   reader.readAsDataURL(file);
